@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  web:
+    container_name: "micro-web"
+    build:
+      context: .
+      dockerfile: ./web/Dockerfile
+    command: "python ."
+    restart: always
+    environment:
+      BROKER_URL: amqp://admin:admin@rabbit:5672/
+      TOPIC: log
+    depends_on:
+      - rabbit
+    ports:
+      - "8000:8000"
+
+  log:
+    container_name: "micro-log"
+    build:
+      context: .
+      dockerfile: ./logger/Dockerfile
+    command: "python ."
+    restart: always
+    environment:
+      BROKER_URL: amqp://admin:admin@rabbit:5672/
+      TOPIC: log
+    depends_on:
+      - rabbit
+
+  rabbit:
+    image: rabbitmq:3.12.10-alpine
+    hostname: rabbit
+    environment:
+      RABBITMQ_DEFAULT_PASS: admin
+      RABBITMQ_DEFAULT_USER: admin
